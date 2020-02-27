@@ -6,9 +6,58 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(nnet)
+```
+
+## Part i
+i) Summarize the data using appropriate tables of percentages to show the pair- wise associations between the levels of satisfaction and 1) contact with other residents and 2) type of housing. Comment on patterns in the associations.
+```{r}
+contact <- c(rep(c("tower block"), 2), rep(c("apartment"), 2), rep(c("house"), 2))
+
+low_high_bin <- c(rep(c("low", "high"), 3))
+
+low_satis <- c(65, 34, 130, 141, 67, 130)
+medium_satis <- c(54, 47, 76, 116, 48, 105)
+high_satis <- c(100, 100, 111, 191, 62, 104)
+
+housing_dat <- cbind.data.frame(contact, low_high_bin, low_satis, medium_satis, high_satis)
+
+housing_dat <- housing_dat %>% 
+  mutate(
+    total = select(., low_satis:high_satis) %>% 
+      rowSums(), 
+    low_satis_pct = low_satis/total,
+    mid_satis_pct = medium_satis/total,
+    high_satis_pct = high_satis/total
+  )
+```
+
+```{r, results='asis'}
+knitr::kable(
+  housing_dat, digits = 2
+) 
+```
+
+ii) Use nominal logistic regression model for the associations between response variable, the levels of satisfaction, and the other two variables. 
+
+Obtain a model that summarizes the patterns in the data. Describe your findings (the pattern in the associations, odds ratios with 95% confidence intervals, goodness of fit.) (Hint: use dummy variable for house types)
+
+(optional; required for PhD) Is there interaction of contact level by house type?
+
+```{r}
+### Nomial Logistic Regression
+housing.nom <- multinom(cbind(low_satis, medium_satis, high_satis)~low_high_bin + contact)
+summary(housing.nom)
 ```
 
 ```{r}
+### Goodness of Fit
+pihat = predict(housing.nom, type = 'probs')
+m = rowSums(housing_dat[,3:5])
+res.pearson = (housing_dat[,3:5]-pihat*m)/sqrt(pihat*m)
+
 
 ```
+
+iii) As the response has ordinal categories, 􏰀t proportional odds model to the data that include the same variables as used in the nominal logistic model ob- tained in (ii). What does the 􏰀tted model tell?
 
