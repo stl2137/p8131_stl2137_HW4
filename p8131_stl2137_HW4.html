@@ -379,17 +379,18 @@ low_satis &lt;- c(65, 34, 130, 141, 67, 130)
 medium_satis &lt;- c(54, 47, 76, 116, 48, 105)
 high_satis &lt;- c(100, 100, 111, 191, 62, 104)
 
-housing_dat &lt;- cbind.data.frame(contact, low_high_bin, low_satis, medium_satis, high_satis)</code></pre>
-<pre class="r"><code>knitr::kable(
-    housing_dat %&gt;% 
+housing_dat &lt;- cbind.data.frame(contact, low_high_bin, low_satis, medium_satis, high_satis)
+
+housing_dat &lt;- housing_dat %&gt;% 
   mutate(
-    total = select(., low_satis:high_satis) %&gt;% 
+    total = dplyr::select(., low_satis:high_satis) %&gt;% 
       rowSums(), 
     low_satis_pct = low_satis/total,
     mid_satis_pct = medium_satis/total,
     high_satis_pct = high_satis/total
-  ) %&gt;% 
-  select(contact, low_high_bin, low_satis, low_satis_pct, medium_satis, mid_satis_pct, high_satis, high_satis_pct), digits = 2
+  )</code></pre>
+<pre class="r"><code>knitr::kable(
+  housing_dat, digits = 4
 ) </code></pre>
 <table>
 <thead>
@@ -397,10 +398,11 @@ housing_dat &lt;- cbind.data.frame(contact, low_high_bin, low_satis, medium_sati
 <th align="left">contact</th>
 <th align="left">low_high_bin</th>
 <th align="right">low_satis</th>
-<th align="right">low_satis_pct</th>
 <th align="right">medium_satis</th>
-<th align="right">mid_satis_pct</th>
 <th align="right">high_satis</th>
+<th align="right">total</th>
+<th align="right">low_satis_pct</th>
+<th align="right">mid_satis_pct</th>
 <th align="right">high_satis_pct</th>
 </tr>
 </thead>
@@ -409,64 +411,165 @@ housing_dat &lt;- cbind.data.frame(contact, low_high_bin, low_satis, medium_sati
 <td align="left">tower block</td>
 <td align="left">low</td>
 <td align="right">65</td>
-<td align="right">0.30</td>
 <td align="right">54</td>
-<td align="right">0.25</td>
 <td align="right">100</td>
-<td align="right">0.46</td>
+<td align="right">219</td>
+<td align="right">0.2968</td>
+<td align="right">0.2466</td>
+<td align="right">0.4566</td>
 </tr>
 <tr class="even">
 <td align="left">tower block</td>
 <td align="left">high</td>
 <td align="right">34</td>
-<td align="right">0.19</td>
 <td align="right">47</td>
-<td align="right">0.26</td>
 <td align="right">100</td>
-<td align="right">0.55</td>
+<td align="right">181</td>
+<td align="right">0.1878</td>
+<td align="right">0.2597</td>
+<td align="right">0.5525</td>
 </tr>
 <tr class="odd">
 <td align="left">apartment</td>
 <td align="left">low</td>
 <td align="right">130</td>
-<td align="right">0.41</td>
 <td align="right">76</td>
-<td align="right">0.24</td>
 <td align="right">111</td>
-<td align="right">0.35</td>
+<td align="right">317</td>
+<td align="right">0.4101</td>
+<td align="right">0.2397</td>
+<td align="right">0.3502</td>
 </tr>
 <tr class="even">
 <td align="left">apartment</td>
 <td align="left">high</td>
 <td align="right">141</td>
-<td align="right">0.31</td>
 <td align="right">116</td>
-<td align="right">0.26</td>
 <td align="right">191</td>
-<td align="right">0.43</td>
+<td align="right">448</td>
+<td align="right">0.3147</td>
+<td align="right">0.2589</td>
+<td align="right">0.4263</td>
 </tr>
 <tr class="odd">
 <td align="left">house</td>
 <td align="left">low</td>
 <td align="right">67</td>
-<td align="right">0.38</td>
 <td align="right">48</td>
-<td align="right">0.27</td>
 <td align="right">62</td>
-<td align="right">0.35</td>
+<td align="right">177</td>
+<td align="right">0.3785</td>
+<td align="right">0.2712</td>
+<td align="right">0.3503</td>
 </tr>
 <tr class="even">
 <td align="left">house</td>
 <td align="left">high</td>
 <td align="right">130</td>
-<td align="right">0.38</td>
 <td align="right">105</td>
-<td align="right">0.31</td>
 <td align="right">104</td>
-<td align="right">0.31</td>
+<td align="right">339</td>
+<td align="right">0.3835</td>
+<td align="right">0.3097</td>
+<td align="right">0.3068</td>
 </tr>
 </tbody>
 </table>
+</div>
+<div id="part-ii" class="section level2">
+<h2>Part ii</h2>
+<ol start="2" style="list-style-type: lower-roman">
+<li>Use nominal logistic regression model for the associations between response variable, the levels of satisfaction, and the other two variables.</li>
+</ol>
+<p>Obtain a model that summarizes the patterns in the data. Describe your findings (the pattern in the associations, odds ratios with 95% confidence intervals, goodness of fit.) (Hint: use dummy variable for house types)</p>
+<p>(optional; required for PhD) Is there interaction of contact level by house type?</p>
+<pre class="r"><code>### Nomial Logistic Regression
+housing.nom &lt;- multinom(cbind(low_satis, medium_satis, high_satis)~low_high_bin + contact)</code></pre>
+<pre><code>## # weights:  15 (8 variable)
+## initial  value 1846.767257 
+## iter  10 value 1803.046285
+## final  value 1802.740161 
+## converged</code></pre>
+<pre class="r"><code>summary(housing.nom)</code></pre>
+<pre><code>## Call:
+## multinom(formula = cbind(low_satis, medium_satis, high_satis) ~ 
+##     low_high_bin + contact)
+## 
+## Coefficients:
+##              (Intercept) low_high_binlow contacthouse contacttower block
+## medium_satis  -0.2180364      -0.2959832   0.06967922          0.4067631
+## high_satis     0.2474047      -0.3282264  -0.30402275          0.6415948
+## 
+## Std. Errors:
+##              (Intercept) low_high_binlow contacthouse contacttower block
+## medium_satis  0.10930968       0.1301046    0.1437749          0.1713009
+## high_satis    0.09783068       0.1181870    0.1351693          0.1500774
+## 
+## Residual Deviance: 3605.48 
+## AIC: 3621.48</code></pre>
+<pre class="r"><code>### Goodness of Fit
+pihat = predict(housing.nom, type = 'probs')
+m = rowSums(housing_dat[,3:5])
+res.pearson = (housing_dat[,3:5]-pihat*m)/sqrt(pihat*m)</code></pre>
+</div>
+<div id="part-iii" class="section level2">
+<h2>Part iii</h2>
+<ol start="3" style="list-style-type: lower-roman">
+<li>As the response has ordinal categories, 􏰀t proportional odds model to the data that include the same variables as used in the nominal logistic model ob- tained in (ii). What does the 􏰀tted model tell?</li>
+</ol>
+<pre class="r"><code>housing_dat_long &lt;- housing_dat %&gt;% 
+  mutate(
+    contact = factor(contact, levels = c(&quot;apartment&quot;, &quot;house&quot;, &quot;tower block&quot;)),
+    low_high_bin = factor(low_high_bin, levels = c(&quot;low&quot;, &quot;high&quot;))
+  ) %&gt;% 
+  dplyr::select(contact, low_high_bin, low_satis, medium_satis, high_satis) %&gt;% 
+  pivot_longer(
+    low_satis:high_satis,
+    names_to = &quot;satis_levels&quot;,
+    values_to = &quot;satis_num&quot;
+  ) %&gt;% 
+  mutate(
+    satis_levels = factor(satis_levels, levels = c(&quot;low_satis&quot;, &quot;medium_satis&quot;, &quot;high_satis&quot;), ordered = T)
+  )</code></pre>
+<pre class="r"><code>library(MASS)</code></pre>
+<pre><code>## 
+## Attaching package: 'MASS'</code></pre>
+<pre><code>## The following object is masked from 'package:dplyr':
+## 
+##     select</code></pre>
+<pre class="r"><code>housing.polr &lt;- polr(satis_levels ~ contact + low_high_bin, weights = satis_num, data = housing_dat_long)
+summary(housing.polr)</code></pre>
+<pre><code>## 
+## Re-fitting to get Hessian</code></pre>
+<pre><code>## Call:
+## polr(formula = satis_levels ~ contact + low_high_bin, data = housing_dat_long, 
+##     weights = satis_num)
+## 
+## Coefficients:
+##                      Value Std. Error t value
+## contacthouse       -0.2353    0.10521  -2.236
+## contacttower block  0.5010    0.11675   4.291
+## low_high_binhigh    0.2524    0.09306   2.713
+## 
+## Intercepts:
+##                         Value   Std. Error t value
+## low_satis|medium_satis  -0.4964  0.0897    -5.5356
+## medium_satis|high_satis  0.6161  0.0901     6.8381
+## 
+## Residual Deviance: 3610.286 
+## AIC: 3620.286</code></pre>
+</div>
+<div id="part-iv" class="section level2">
+<h2>Part iv</h2>
+<ol start="4" style="list-style-type: lower-roman">
+<li>Calculate Pearson residuals from the proportional odds model for ordinal response to 􏰀nd where the largest discrepancies are between the observed fre- quencies and expected frequencies estimated from the model.</li>
+</ol>
+<pre class="r"><code>pihat.ord = predict(housing.polr, housing_dat, type = 'p')
+m.ord = rowSums(housing_dat[,3:5])
+res.pearson.ord = (housing_dat[,3:5]-pihat.ord*m.ord)/sqrt(pihat.ord*m.ord)
+G.ord = sum(res.pearson.ord^2)
+G.ord </code></pre>
+<pre><code>## [1] 11.64205</code></pre>
 </div>
 
 

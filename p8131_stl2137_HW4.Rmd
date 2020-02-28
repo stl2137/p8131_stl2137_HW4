@@ -24,7 +24,7 @@ housing_dat <- cbind.data.frame(contact, low_high_bin, low_satis, medium_satis, 
 
 housing_dat <- housing_dat %>% 
   mutate(
-    total = select(., low_satis:high_satis) %>% 
+    total = dplyr::select(., low_satis:high_satis) %>% 
       rowSums(), 
     low_satis_pct = low_satis/total,
     mid_satis_pct = medium_satis/total,
@@ -34,15 +34,17 @@ housing_dat <- housing_dat %>%
 
 ```{r, results='asis'}
 knitr::kable(
-  housing_dat, digits = 2
+  housing_dat, digits = 4
 ) 
 ```
+
+
+
+## Part ii
 
 ii) Use nominal logistic regression model for the associations between response variable, the levels of satisfaction, and the other two variables. 
 
 Obtain a model that summarizes the patterns in the data. Describe your findings (the pattern in the associations, odds ratios with 95% confidence intervals, goodness of fit.) (Hint: use dummy variable for house types)
-
-(optional; required for PhD) Is there interaction of contact level by house type?
 
 ```{r}
 ### Nomial Logistic Regression
@@ -55,9 +57,51 @@ summary(housing.nom)
 pihat = predict(housing.nom, type = 'probs')
 m = rowSums(housing_dat[,3:5])
 res.pearson = (housing_dat[,3:5]-pihat*m)/sqrt(pihat*m)
-
-
+G.stat=sum(res.pearson^2) 
+G.stat
+# df = (n - p)(J - 1)
+pval = 1 - pchisq(G.stat, df = (6-3)*(3-1))
 ```
 
-iii) As the response has ordinal categories, 􏰀t proportional odds model to the data that include the same variables as used in the nominal logistic model ob- tained in (ii). What does the 􏰀tted model tell?
+Based off the p-value of `r pval`, we fail to reject the null hypothesis and conclude that the model fits the data. 
 
+## Part iii
+
+iii)  What does the 􏰀tted model tell?
+
+```{r}
+housing_dat_long <- housing_dat %>% 
+  mutate(
+    contact = factor(contact, levels = c("apartment", "house", "tower block")),
+    low_high_bin = factor(low_high_bin, levels = c("low", "high"))
+  ) %>% 
+  dplyr::select(contact, low_high_bin, low_satis, medium_satis, high_satis) %>% 
+  pivot_longer(
+    low_satis:high_satis,
+    names_to = "satis_levels",
+    values_to = "satis_num"
+  ) %>% 
+  mutate(
+    satis_levels = factor(satis_levels, levels = c("low_satis", "medium_satis", "high_satis"), ordered = T)
+  )
+```
+
+```{r}
+library(MASS)
+housing.polr <- polr(satis_levels ~ contact + low_high_bin, weights = satis_num, data = housing_dat_long)
+summary(housing.polr)
+```
+
+The 
+
+## Part iv
+
+```{r}
+pihat.ord = predict(housing.polr, housing_dat, type = 'p')
+m.ord = rowSums(housing_dat[,3:5])
+res.pearson.ord = (housing_dat[,3:5]-pihat.ord*m.ord)/sqrt(pihat.ord*m.ord)
+G.ord = sum(res.pearson.ord^2)
+G.ord 
+```
+
+The largest discrepancies between the observed frequencies and expected frequencies estimated from model are people with high satisfaction living in houses with high contact at a value of -1.478, people with medium satisfaction living in houses with high contact at a value of 1.368, and people with high satisfaction living in houses with low contact at a value 1.244. 
