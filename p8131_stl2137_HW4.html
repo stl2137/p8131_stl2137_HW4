@@ -366,8 +366,6 @@ summary {
 </div>
 
 
-<div id="fix-numbers-bc-of-baseline" class="section level1">
-<h1>FIX NUMBERS B/C OF BASELINE</h1>
 <div id="part-i" class="section level2">
 <h2>Part i</h2>
 <pre class="r"><code>shelter &lt;- c(rep(c(&quot;tower block&quot;), 2), rep(c(&quot;apartment&quot;), 2), rep(c(&quot;house&quot;), 2))
@@ -488,7 +486,7 @@ housing_dat &lt;- housing_dat %&gt;%
 <div id="part-ii" class="section level2">
 <h2>Part ii</h2>
 <ol start="2" style="list-style-type: lower-roman">
-<li>Describe your findings (the pattern in the associations, odds ratios with 95% confidence intervals) (Hint: use dummy variable for house types)</li>
+<li>Describe your findings (the pattern in the associations, odds ratios with 95% confidence intervals)</li>
 </ol>
 <pre class="r"><code>### Nomial Logistic Regression
 
@@ -518,11 +516,29 @@ summary_housing.nom</code></pre>
 ## AIC: 3621.48</code></pre>
 <pre class="r"><code>### Confidence Intervals for Odds Ratios
 ### beta +/- + 1.96*se
+exp_coef_housing &lt;- exp(summary_housing.nom$coefficients)
 coef_housing &lt;- summary_housing.nom$coefficients
 se_housing &lt;- summary_housing.nom$standard.errors
 
 ci_housing_plus &lt;- exp(coef_housing + qnorm(0.025) * se_housing)
 ci_housing_minus &lt;- exp(coef_housing - qnorm(0.025) * se_housing)</code></pre>
+<div id="medium-satisfaction" class="section level3">
+<h3>Medium Satisfaction</h3>
+<ul>
+<li><p>The odds of having low satisfaction versus medium satisfaction living in an apartment with low contact is 0.5980882. We are 95% confident that the odds is between 0.4720021 and 0.7578557.</p></li>
+<li><p>The odds ratio between living in an apartment and living in a house for low satisfaction versus medium satisfaction is 1.0721628, holding all other variables constant. We are 95% confident that the odds ratio is between 0.8088711 and 1.4211574.</p></li>
+<li><p>The odds ratio between living in an apartment and living in a tower block for low satisfaction versus medium satisfaction is 1.5019391, holding all other variables constant. We are 95% confident that the odds ratio is between 1.0735958 and 2.1011828.</p></li>
+<li><p>The odds ratio between living in housing with low contact versus high contact for low satisfaction versus medium satisfaction is 1.3444428, holding all other variables constant. We are 95% confident that the odds ratio is between 1.0418307 and 1.7349522.</p></li>
+</ul>
+</div>
+<div id="high-satisfaction" class="section level3">
+<h3>High Satisfaction</h3>
+<ul>
+<li><p>The odds of having low satisfaction versus high satisfaction living in an apartment with low contact is 0.9223569. We are 95% confident that the odds is between 0.7464899 and 1.1396566.</p></li>
+<li><p>The odds ratio between living in an apartment and living in a house for low satisfaction versus high satisfaction is 0.7378466, holding all other variables constant. We are 95% confident that the odds ratio is between 0.5661217 and 0.9616618.</p></li>
+<li><p>The odds ratio between living in an apartment and living in a tower block for low satisfaction versus high satisfaction is 1.8995016, holding all other variables constant. We are 95% confident that the odds ratio is between 1.4154471 and 2.5490928.</p></li>
+<li><p>The odds ratio between living in housing with low contact versus high contact for low satisfaction versus high satisfaction is 1.3885022, holding all other variables constant. We are 95% confident that the odds ratio is between 1.1014013 and 1.7504412.</p></li>
+</ul>
 <pre class="r"><code>### Goodness of Fit
 pihat = predict(housing.nom, type = 'probs')
 m = rowSums(housing_dat[,3:5])
@@ -533,6 +549,7 @@ G.stat</code></pre>
 <pre class="r"><code># df = (n - p)(J - 1)
 pval = 1 - pchisq(G.stat, df = (6-4)*(3-1))</code></pre>
 <p>Based off the p-value of 0.1395075, we fail to reject the null hypothesis and conclude that the model fits the data.</p>
+</div>
 </div>
 <div id="part-iii" class="section level2">
 <h2>Part iii</h2>
@@ -588,7 +605,6 @@ G.ord = sum(res.pearson.ord^2)
 G.ord </code></pre>
 <pre><code>## [1] 11.64205</code></pre>
 <p>The largest discrepancies between the observed frequencies and expected frequencies estimated from model are people with high satisfaction living in houses with high contact at a value of -1.478, people with medium satisfaction living in houses with high contact at a value of 1.368, and people with high satisfaction living in houses with low contact at a value 1.244.</p>
-</div>
 </div>
 
 

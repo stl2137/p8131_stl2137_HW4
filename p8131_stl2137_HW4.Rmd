@@ -9,8 +9,6 @@ library(tidyverse)
 library(nnet)
 ```
 
-# HODLING ALL OTHER VARIABLES CONSTANT
-
 ## Part i
 ```{r}
 shelter <- c(rep(c("tower block"), 2), rep(c("apartment"), 2), rep(c("house"), 2))
@@ -53,8 +51,6 @@ knitr::kable(
 
 ## Part ii
 
-ii) Describe your findings (the pattern in the associations, odds ratios with 95% confidence intervals) 
-
 ```{r}
 ### Nomial Logistic Regression
 
@@ -74,27 +70,25 @@ ci_housing_plus <- exp(coef_housing + qnorm(0.025) * se_housing)
 ci_housing_minus <- exp(coef_housing - qnorm(0.025) * se_housing)
 ```
 
-# interpretation for intercepts?
+### Low Satisfaction vs. Medium Satisfaction 
 
-### Medium Satisfaction 
+* The odds of having low satisfaction versus medium satisfaction living in an apartment with low contact is `r exp_coef_housing[1,1]`. We are 95% confident that the odds is between `r ci_housing_plus[1,1]` and `r ci_housing_minus[1,1]`.
 
-* The odds between 
+* The odds ratio between living in an apartment and living in a house for low satisfaction versus medium satisfaction is `r exp_coef_housing[1,2]`, holding all other variables constant. We are 95% confident that the odds ratio is between `r ci_housing_plus[1,2]` and `r ci_housing_minus[1,2]`.
 
-* The odds ratio between living in an apartment and living in a house for low satisfaction versus medium satisfaction is `r exp_coef_housing[1,2]`. We are 95% confident that the odds ratio is between `r ci_housing_plus[1,2]` and `r ci_housing_minus[1,2]`.
+* The odds ratio between living in an apartment and living in a tower block for low satisfaction versus medium satisfaction is `r exp_coef_housing[1,3]`, holding all other variables constant. We are 95% confident that the odds ratio is between `r ci_housing_plus[1,3]` and `r ci_housing_minus[1,3]`.
 
-* The odds ratio between living in an apartment and living in a tower block for low satisfaction versus medium satisfaction is `r exp_coef_housing[1,3]`. We are 95% confident that the odds ratio is between `r ci_housing_plus[1,3]` and `r ci_housing_minus[1,3]`.
+* The odds ratio between living in housing with low contact versus high contact for low satisfaction versus medium satisfaction is `r exp_coef_housing[1,4]`, holding all other variables constant. We are 95% confident that the odds ratio is between `r ci_housing_plus[1,4]` and `r ci_housing_minus[1,4]`.
 
-* The odds ratio between living in housing with low contact versus high contact for low satisfaction versus medium satisfaction is `r exp_coef_housing[1,4]`. We are 95% confident that the odds ratio is between `r ci_housing_plus[1,4]` and `r ci_housing_minus[1,4]`.
+### Low Satisfaction vs. High Satisfaction 
 
-### High Satisfaction 
+* The odds of having low satisfaction versus high satisfaction living in an apartment with low contact is `r exp_coef_housing[2,1]`. We are 95% confident that the odds is between `r ci_housing_plus[2,1]` and `r ci_housing_minus[2,1]`.
 
-* The odds between
+* The odds ratio between living in an apartment and living in a house for low satisfaction versus high satisfaction is `r exp_coef_housing[2,2]`, holding all other variables constant. We are 95% confident that the odds ratio is between `r ci_housing_plus[2,2]` and `r ci_housing_minus[2,2]`.
 
-* The odds ratio between living in an apartment and living in a house for low satisfaction versus high satisfaction is `r exp_coef_housing[2,2]`. We are 95% confident that the odds ratio is between `r ci_housing_plus[2,2]` and `r ci_housing_minus[2,2]`.
+* The odds ratio between living in an apartment and living in a tower block for low satisfaction versus high satisfaction is `r exp_coef_housing[2,3]`, holding all other variables constant. We are 95% confident that the odds ratio is between `r ci_housing_plus[2,3]` and `r ci_housing_minus[2,3]`.
 
-* The odds ratio between living in an apartment and living in a tower block for low satisfaction versus high satisfaction is `r exp_coef_housing[2,3]`. We are 95% confident that the odds ratio is between `r ci_housing_plus[2,3]` and `r ci_housing_minus[2,3]`.
-
-* The odds ratio between living in housing with low contact versus high contact for low satisfaction versus high satisfaction is `r exp_coef_housing[2,4]`. We are 95% confident that the odds ratio is between `r ci_housing_plus[2,4]` and `r ci_housing_minus[2,4]`.
+* The odds ratio between living in housing with low contact versus high contact for low satisfaction versus high satisfaction is `r exp_coef_housing[2,4]`, holding all other variables constant. We are 95% confident that the odds ratio is between `r ci_housing_plus[2,4]` and `r ci_housing_minus[2,4]`.
 
 ```{r}
 ### Goodness of Fit
