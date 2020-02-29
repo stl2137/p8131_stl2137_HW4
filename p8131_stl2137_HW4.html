@@ -366,20 +366,23 @@ summary {
 </div>
 
 
+<div id="fix-numbers-bc-of-baseline" class="section level1">
+<h1>FIX NUMBERS B/C OF BASELINE</h1>
 <div id="part-i" class="section level2">
 <h2>Part i</h2>
-<ol style="list-style-type: lower-roman">
-<li>Summarize the data using appropriate tables of percentages to show the pair- wise associations between the levels of satisfaction and 1) contact with other residents and 2) type of housing. Comment on patterns in the associations.</li>
-</ol>
-<pre class="r"><code>contact &lt;- c(rep(c(&quot;tower block&quot;), 2), rep(c(&quot;apartment&quot;), 2), rep(c(&quot;house&quot;), 2))
+<pre class="r"><code>shelter &lt;- c(rep(c(&quot;tower block&quot;), 2), rep(c(&quot;apartment&quot;), 2), rep(c(&quot;house&quot;), 2))
 
-low_high_bin &lt;- c(rep(c(&quot;low&quot;, &quot;high&quot;), 3))
+contact &lt;- c(rep(c(&quot;low&quot;, &quot;high&quot;), 3))
 
 low_satis &lt;- c(65, 34, 130, 141, 67, 130)
 medium_satis &lt;- c(54, 47, 76, 116, 48, 105)
 high_satis &lt;- c(100, 100, 111, 191, 62, 104)
 
-housing_dat &lt;- cbind.data.frame(contact, low_high_bin, low_satis, medium_satis, high_satis)
+housing_dat &lt;- cbind.data.frame(shelter, contact, low_satis, medium_satis, high_satis) %&gt;% 
+    mutate(
+    shelter = factor(shelter, levels = c(&quot;apartment&quot;, &quot;house&quot;, &quot;tower block&quot;)),
+    contact = factor(contact, levels = c(&quot;low&quot;, &quot;high&quot;))
+  ) 
 
 housing_dat &lt;- housing_dat %&gt;% 
   mutate(
@@ -395,8 +398,8 @@ housing_dat &lt;- housing_dat %&gt;%
 <table>
 <thead>
 <tr class="header">
+<th align="left">shelter</th>
 <th align="left">contact</th>
-<th align="left">low_high_bin</th>
 <th align="right">low_satis</th>
 <th align="right">medium_satis</th>
 <th align="right">high_satis</th>
@@ -475,54 +478,66 @@ housing_dat &lt;- housing_dat %&gt;%
 </tr>
 </tbody>
 </table>
+<ul>
+<li><p>Those living in tower blocks for both low and high contact overall seem to have higher rates of high satisfaction compared to those living in apartments and houses.</p></li>
+<li><p>Those living in the tower block with high contact have the lowest percentage of low satisfaction and the highest percentage of high satisfaction.</p></li>
+<li><p>For those living in apartments with low contact, the highest percentage of residents seem to have low satisfication; however, for those living in apartments with high contact, the highest percentage of residents seem to have high satisfication.</p></li>
+<li><p>Those living in houses for both low and high contact have the highest percentage of low satisfication within people living in houses.</p></li>
+</ul>
 </div>
 <div id="part-ii" class="section level2">
 <h2>Part ii</h2>
 <ol start="2" style="list-style-type: lower-roman">
-<li>Use nominal logistic regression model for the associations between response variable, the levels of satisfaction, and the other two variables.</li>
+<li>Describe your findings (the pattern in the associations, odds ratios with 95% confidence intervals) (Hint: use dummy variable for house types)</li>
 </ol>
-<p>Obtain a model that summarizes the patterns in the data. Describe your findings (the pattern in the associations, odds ratios with 95% confidence intervals, goodness of fit.) (Hint: use dummy variable for house types)</p>
-<p>(optional; required for PhD) Is there interaction of contact level by house type?</p>
 <pre class="r"><code>### Nomial Logistic Regression
-housing.nom &lt;- multinom(cbind(low_satis, medium_satis, high_satis)~low_high_bin + contact)</code></pre>
+
+housing.nom &lt;- multinom(cbind(low_satis, medium_satis, high_satis)~shelter + contact, data = housing_dat)</code></pre>
 <pre><code>## # weights:  15 (8 variable)
 ## initial  value 1846.767257 
-## iter  10 value 1803.046285
+## iter  10 value 1802.866981
 ## final  value 1802.740161 
 ## converged</code></pre>
-<pre class="r"><code>summary(housing.nom)</code></pre>
+<pre class="r"><code>summary_housing.nom &lt;- summary(housing.nom)
+summary_housing.nom</code></pre>
 <pre><code>## Call:
 ## multinom(formula = cbind(low_satis, medium_satis, high_satis) ~ 
-##     low_high_bin + contact)
+##     shelter + contact, data = housing_dat)
 ## 
 ## Coefficients:
-##              (Intercept) low_high_binlow contacthouse contacttower block
-## medium_satis  -0.2180364      -0.2959832   0.06967922          0.4067631
-## high_satis     0.2474047      -0.3282264  -0.30402275          0.6415948
+##              (Intercept) shelterhouse sheltertower block contacthigh
+## medium_satis -0.51401706   0.06967794          0.4067570   0.2959796
+## high_satis   -0.08082309  -0.30401939          0.6415915   0.3282256
 ## 
 ## Std. Errors:
-##              (Intercept) low_high_binlow contacthouse contacttower block
-## medium_satis  0.10930968       0.1301046    0.1437749          0.1713009
-## high_satis    0.09783068       0.1181870    0.1351693          0.1500774
+##              (Intercept) shelterhouse sheltertower block contacthigh
+## medium_satis   0.1207955    0.1437749          0.1713008   0.1301045
+## high_satis     0.1079357    0.1351693          0.1500773   0.1181870
 ## 
 ## Residual Deviance: 3605.48 
 ## AIC: 3621.48</code></pre>
+<pre class="r"><code>### Confidence Intervals for Odds Ratios
+### beta +/- + 1.96*se
+coef_housing &lt;- summary_housing.nom$coefficients
+se_housing &lt;- summary_housing.nom$standard.errors
+
+ci_housing_plus &lt;- exp(coef_housing + qnorm(0.025) * se_housing)
+ci_housing_minus &lt;- exp(coef_housing - qnorm(0.025) * se_housing)</code></pre>
 <pre class="r"><code>### Goodness of Fit
 pihat = predict(housing.nom, type = 'probs')
 m = rowSums(housing_dat[,3:5])
-res.pearson = (housing_dat[,3:5]-pihat*m)/sqrt(pihat*m)</code></pre>
+res.pearson = (housing_dat[,3:5]-pihat*m)/sqrt(pihat*m)
+G.stat=sum(res.pearson^2) 
+G.stat</code></pre>
+<pre><code>## [1] 6.932335</code></pre>
+<pre class="r"><code># df = (n - p)(J - 1)
+pval = 1 - pchisq(G.stat, df = (6-4)*(3-1))</code></pre>
+<p>Based off the p-value of 0.1395075, we fail to reject the null hypothesis and conclude that the model fits the data.</p>
 </div>
 <div id="part-iii" class="section level2">
 <h2>Part iii</h2>
-<ol start="3" style="list-style-type: lower-roman">
-<li>As the response has ordinal categories, 􏰀t proportional odds model to the data that include the same variables as used in the nominal logistic model ob- tained in (ii). What does the 􏰀tted model tell?</li>
-</ol>
 <pre class="r"><code>housing_dat_long &lt;- housing_dat %&gt;% 
-  mutate(
-    contact = factor(contact, levels = c(&quot;apartment&quot;, &quot;house&quot;, &quot;tower block&quot;)),
-    low_high_bin = factor(low_high_bin, levels = c(&quot;low&quot;, &quot;high&quot;))
-  ) %&gt;% 
-  dplyr::select(contact, low_high_bin, low_satis, medium_satis, high_satis) %&gt;% 
+  dplyr::select(shelter, contact, low_satis, medium_satis, high_satis) %&gt;% 
   pivot_longer(
     low_satis:high_satis,
     names_to = &quot;satis_levels&quot;,
@@ -537,19 +552,19 @@ res.pearson = (housing_dat[,3:5]-pihat*m)/sqrt(pihat*m)</code></pre>
 <pre><code>## The following object is masked from 'package:dplyr':
 ## 
 ##     select</code></pre>
-<pre class="r"><code>housing.polr &lt;- polr(satis_levels ~ contact + low_high_bin, weights = satis_num, data = housing_dat_long)
+<pre class="r"><code>housing.polr &lt;- polr(satis_levels ~ shelter + contact, weights = satis_num, data = housing_dat_long)
 summary(housing.polr)</code></pre>
 <pre><code>## 
 ## Re-fitting to get Hessian</code></pre>
 <pre><code>## Call:
-## polr(formula = satis_levels ~ contact + low_high_bin, data = housing_dat_long, 
+## polr(formula = satis_levels ~ shelter + contact, data = housing_dat_long, 
 ##     weights = satis_num)
 ## 
 ## Coefficients:
 ##                      Value Std. Error t value
-## contacthouse       -0.2353    0.10521  -2.236
-## contacttower block  0.5010    0.11675   4.291
-## low_high_binhigh    0.2524    0.09306   2.713
+## shelterhouse       -0.2353    0.10521  -2.236
+## sheltertower block  0.5010    0.11675   4.291
+## contacthigh         0.2524    0.09306   2.713
 ## 
 ## Intercepts:
 ##                         Value   Std. Error t value
@@ -558,18 +573,22 @@ summary(housing.polr)</code></pre>
 ## 
 ## Residual Deviance: 3610.286 
 ## AIC: 3620.286</code></pre>
+<ul>
+<li><p>0.2353 is the log odds ratio of falling into the lower category of satisfaction versus the higher category of satisfaction for living in an apartment versus living in a house, holding all other variables constant.</p></li>
+<li><p>-0.5010 is the log odds ratio of falling into the lower category of satisfaction versus the higher category of satisfaction for living in an apartment versus living in a tower block, holding all other variables constant.</p></li>
+<li><p>-0.2524 is the log odds ratio of falling into the lower category of satisfaction versus the higher category of satisfaction for living in housing with low contact versus living in housing with high contact, holding all other variables constant.</p></li>
+</ul>
 </div>
 <div id="part-iv" class="section level2">
 <h2>Part iv</h2>
-<ol start="4" style="list-style-type: lower-roman">
-<li>Calculate Pearson residuals from the proportional odds model for ordinal response to 􏰀nd where the largest discrepancies are between the observed fre- quencies and expected frequencies estimated from the model.</li>
-</ol>
 <pre class="r"><code>pihat.ord = predict(housing.polr, housing_dat, type = 'p')
 m.ord = rowSums(housing_dat[,3:5])
 res.pearson.ord = (housing_dat[,3:5]-pihat.ord*m.ord)/sqrt(pihat.ord*m.ord)
 G.ord = sum(res.pearson.ord^2)
 G.ord </code></pre>
 <pre><code>## [1] 11.64205</code></pre>
+<p>The largest discrepancies between the observed frequencies and expected frequencies estimated from model are people with high satisfaction living in houses with high contact at a value of -1.478, people with medium satisfaction living in houses with high contact at a value of 1.368, and people with high satisfaction living in houses with low contact at a value 1.244.</p>
+</div>
 </div>
 
 

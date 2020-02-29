@@ -9,18 +9,23 @@ library(tidyverse)
 library(nnet)
 ```
 
-## Part i
-i) Summarize the data using appropriate tables of percentages to show the pair- wise associations between the levels of satisfaction and 1) contact with other residents and 2) type of housing. Comment on patterns in the associations.
-```{r}
-contact <- c(rep(c("tower block"), 2), rep(c("apartment"), 2), rep(c("house"), 2))
+# HODLING ALL OTHER VARIABLES CONSTANT
 
-low_high_bin <- c(rep(c("low", "high"), 3))
+## Part i
+```{r}
+shelter <- c(rep(c("tower block"), 2), rep(c("apartment"), 2), rep(c("house"), 2))
+
+contact <- c(rep(c("low", "high"), 3))
 
 low_satis <- c(65, 34, 130, 141, 67, 130)
 medium_satis <- c(54, 47, 76, 116, 48, 105)
 high_satis <- c(100, 100, 111, 191, 62, 104)
 
-housing_dat <- cbind.data.frame(contact, low_high_bin, low_satis, medium_satis, high_satis)
+housing_dat <- cbind.data.frame(shelter, contact, low_satis, medium_satis, high_satis) %>% 
+    mutate(
+    shelter = factor(shelter, levels = c("apartment", "house", "tower block")),
+    contact = factor(contact, levels = c("low", "high"))
+  ) 
 
 housing_dat <- housing_dat %>% 
   mutate(
@@ -38,19 +43,58 @@ knitr::kable(
 ) 
 ```
 
+* Those living in tower blocks for both low and high contact overall seem to have higher rates of high satisfaction compared to those living in apartments and houses.
 
+* Those living in the tower block with high contact have the lowest percentage of low satisfaction and the highest percentage of high satisfaction. 
+
+* For those living in apartments with low contact, the highest percentage of residents seem to have low satisfication; however, for those living in apartments with high contact, the highest percentage of residents seem to have high satisfication. 
+
+* Those living in houses for both low and high contact have the highest percentage of low satisfication within people living in houses. 
 
 ## Part ii
 
-ii) Use nominal logistic regression model for the associations between response variable, the levels of satisfaction, and the other two variables. 
-
-Obtain a model that summarizes the patterns in the data. Describe your findings (the pattern in the associations, odds ratios with 95% confidence intervals, goodness of fit.) (Hint: use dummy variable for house types)
+ii) Describe your findings (the pattern in the associations, odds ratios with 95% confidence intervals) 
 
 ```{r}
 ### Nomial Logistic Regression
-housing.nom <- multinom(cbind(low_satis, medium_satis, high_satis)~low_high_bin + contact)
-summary(housing.nom)
+
+housing.nom <- multinom(cbind(low_satis, medium_satis, high_satis)~shelter + contact, data = housing_dat)
+summary_housing.nom <- summary(housing.nom)
+summary_housing.nom
 ```
+
+```{r}
+### Confidence Intervals for Odds Ratios
+### beta +/- + 1.96*se
+exp_coef_housing <- exp(summary_housing.nom$coefficients)
+coef_housing <- summary_housing.nom$coefficients
+se_housing <- summary_housing.nom$standard.errors
+
+ci_housing_plus <- exp(coef_housing + qnorm(0.025) * se_housing)
+ci_housing_minus <- exp(coef_housing - qnorm(0.025) * se_housing)
+```
+
+# interpretation for intercepts?
+
+### Medium Satisfaction 
+
+* The odds between 
+
+* The odds ratio between living in an apartment and living in a house for low satisfaction versus medium satisfaction is `r exp_coef_housing[1,2]`. We are 95% confident that the odds ratio is between `r ci_housing_plus[1,2]` and `r ci_housing_minus[1,2]`.
+
+* The odds ratio between living in an apartment and living in a tower block for low satisfaction versus medium satisfaction is `r exp_coef_housing[1,3]`. We are 95% confident that the odds ratio is between `r ci_housing_plus[1,3]` and `r ci_housing_minus[1,3]`.
+
+* The odds ratio between living in housing with low contact versus high contact for low satisfaction versus medium satisfaction is `r exp_coef_housing[1,4]`. We are 95% confident that the odds ratio is between `r ci_housing_plus[1,4]` and `r ci_housing_minus[1,4]`.
+
+### High Satisfaction 
+
+* The odds between
+
+* The odds ratio between living in an apartment and living in a house for low satisfaction versus high satisfaction is `r exp_coef_housing[2,2]`. We are 95% confident that the odds ratio is between `r ci_housing_plus[2,2]` and `r ci_housing_minus[2,2]`.
+
+* The odds ratio between living in an apartment and living in a tower block for low satisfaction versus high satisfaction is `r exp_coef_housing[2,3]`. We are 95% confident that the odds ratio is between `r ci_housing_plus[2,3]` and `r ci_housing_minus[2,3]`.
+
+* The odds ratio between living in housing with low contact versus high contact for low satisfaction versus high satisfaction is `r exp_coef_housing[2,4]`. We are 95% confident that the odds ratio is between `r ci_housing_plus[2,4]` and `r ci_housing_minus[2,4]`.
 
 ```{r}
 ### Goodness of Fit
@@ -60,22 +104,16 @@ res.pearson = (housing_dat[,3:5]-pihat*m)/sqrt(pihat*m)
 G.stat=sum(res.pearson^2) 
 G.stat
 # df = (n - p)(J - 1)
-pval = 1 - pchisq(G.stat, df = (6-3)*(3-1))
+pval = 1 - pchisq(G.stat, df = (6-4)*(3-1))
 ```
 
 Based off the p-value of `r pval`, we fail to reject the null hypothesis and conclude that the model fits the data. 
 
 ## Part iii
 
-iii)  What does the 􏰀tted model tell?
-
 ```{r}
 housing_dat_long <- housing_dat %>% 
-  mutate(
-    contact = factor(contact, levels = c("apartment", "house", "tower block")),
-    low_high_bin = factor(low_high_bin, levels = c("low", "high"))
-  ) %>% 
-  dplyr::select(contact, low_high_bin, low_satis, medium_satis, high_satis) %>% 
+  dplyr::select(shelter, contact, low_satis, medium_satis, high_satis) %>% 
   pivot_longer(
     low_satis:high_satis,
     names_to = "satis_levels",
@@ -88,11 +126,15 @@ housing_dat_long <- housing_dat %>%
 
 ```{r}
 library(MASS)
-housing.polr <- polr(satis_levels ~ contact + low_high_bin, weights = satis_num, data = housing_dat_long)
+housing.polr <- polr(satis_levels ~ shelter + contact, weights = satis_num, data = housing_dat_long)
 summary(housing.polr)
 ```
 
-The 
+* 0.2353 is the log odds ratio of falling into the lower category of satisfaction versus the higher category of satisfaction for living in an apartment versus living in a house, holding all other variables constant.
+
+* -0.5010 is the log odds ratio of falling into the lower category of satisfaction versus the higher category of satisfaction for living in an apartment versus living in a tower block, holding all other variables constant. 
+
+* -0.2524 is the log odds ratio of falling into the lower category of satisfaction versus the higher category of satisfaction for living in housing with low contact versus living in housing with high contact, holding all other variables constant. 
 
 ## Part iv
 
